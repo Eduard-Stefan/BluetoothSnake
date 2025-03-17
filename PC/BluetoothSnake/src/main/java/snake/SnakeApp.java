@@ -8,6 +8,7 @@ public class SnakeApp extends JFrame {
     private final JPanel mainPanel;
     public SnakeGame game;
     public GameState gameState = GameState.MENU;
+    private Difficulty difficulty = Difficulty.EASY;
 
     public SnakeApp() {
         setTitle("Bluetooth Snake");
@@ -29,7 +30,7 @@ public class SnakeApp extends JFrame {
 
     public void startGame() {
         if (game == null || gameState == GameState.GAME_OVER) {
-            game = new SnakeGame(this);
+            game = new SnakeGame(this, difficulty);
             mainPanel.add(game, "game");
         }
         cardLayout.show(mainPanel, "game");
@@ -54,5 +55,13 @@ public class SnakeApp extends JFrame {
                 showStartMenu();
             }
         }
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
     }
 }

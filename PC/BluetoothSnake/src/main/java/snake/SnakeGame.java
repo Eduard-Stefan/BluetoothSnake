@@ -14,23 +14,28 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
     private static final int GAME_WIDTH = 400;
     private static final int GAME_HEIGHT = 400;
     private final LinkedList<Point> snake;
+    private final LinkedList<Point> obstacles;
     private final Timer timer;
     private final SnakeApp app;
+    private final Difficulty difficulty;
     private Direction currentDirection = Direction.RIGHT;
     private Point food;
     private int score = 0;
     private boolean gameOver = false;
 
-    public SnakeGame(SnakeApp app) {
+    public SnakeGame(SnakeApp app, Difficulty difficulty) {
         this.app = app;
+        this.difficulty = difficulty;
         setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(this);
         snake = new LinkedList<>();
         snake.add(new Point(GAME_WIDTH / 2, GAME_HEIGHT / 2));
+        obstacles = new LinkedList<>();
         generateFood();
-        timer = new Timer(100, this);
+        generateObstacles();
+        timer = new Timer(difficulty.getDelay(), this);
         timer.start();
     }
 
@@ -53,12 +58,33 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
             app.setGameState(GameState.GAME_OVER);
             return;
         }
+        if (obstacles.contains(newHead)) {
+            gameOver = true;
+            app.setGameState(GameState.GAME_OVER);
+            return;
+        }
         snake.addFirst(newHead);
         if (newHead.equals(food)) {
             score++;
             generateFood();
         } else {
             snake.removeLast();
+        }
+    }
+
+    private void generateObstacles() {
+        obstacles.clear();
+        Random random = new Random();
+        Point startingPoint = new Point(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        for (int i = 0; i < difficulty.getNumObstacles(); i++) {
+            int x, y;
+            Point newObstacle;
+            do {
+                x = random.nextInt(GAME_WIDTH / GRID_SIZE) * GRID_SIZE;
+                y = random.nextInt(GAME_HEIGHT / GRID_SIZE) * GRID_SIZE;
+                newObstacle = new Point(x, y);
+            } while (snake.contains(newObstacle) || newObstacle.equals(food) || isOnInitialLine(newObstacle, startingPoint));
+            obstacles.add(newObstacle);
         }
     }
 
@@ -75,7 +101,7 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
             x = random.nextInt(GAME_WIDTH / GRID_SIZE) * GRID_SIZE;
             y = random.nextInt(GAME_HEIGHT / GRID_SIZE) * GRID_SIZE;
             newFood = new Point(x, y);
-        } while (snake.contains(newFood) || isOnInitialLine(newFood, startingPoint));
+        } while (snake.contains(newFood) || obstacles.contains(newFood) || isOnInitialLine(newFood, startingPoint));
         food = new Point(x, y);
     }
 
@@ -96,6 +122,9 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
         g.setColor(Color.RED);
         g.fillRect(food.x, food.y, GRID_SIZE, GRID_SIZE);
         g.setColor(Color.GRAY);
+        for (Point p : obstacles) {
+            g.fillRect(p.x, p.y, GRID_SIZE, GRID_SIZE);
+        }
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Score: " + score, 10, 20);
@@ -123,7 +152,8 @@ public class SnakeGame extends JPanel implements ActionListener, KeyListener {
         score = 0;
         gameOver = false;
         generateFood();
-        timer.setDelay(100);
+        generateObstacles();
+        timer.setDelay(difficulty.getDelay());
         timer.start();
         repaint();
     }

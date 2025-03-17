@@ -9,6 +9,9 @@ public class StartMenu extends JPanel {
         setLayout(new GridLayout(3, 1));
         JButton startButton = new JButton("Start Game");
         startButton.addActionListener(e -> app.startGame());
+        JButton difficultyButton = new JButton("Difficulty: EASY");
+        difficultyButton.addActionListener(new DifficultyButtonListener(app, difficultyButton));
         add(startButton);
+        add(difficultyButton);
     }
 }
