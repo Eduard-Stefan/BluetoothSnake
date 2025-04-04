@@ -6,6 +6,7 @@ import java.awt.*;
 public class SnakeApp extends JFrame {
     private final CardLayout cardLayout;
     private final JPanel mainPanel;
+    private final StartMenu startMenu;
     public SnakeGame game;
     public GameState gameState = GameState.MENU;
     private Difficulty difficulty = Difficulty.EASY;
@@ -16,12 +17,15 @@ public class SnakeApp extends JFrame {
         setResizable(false);
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
-        StartMenu startMenu = new StartMenu(this);
+        startMenu = new StartMenu(this);
         mainPanel.add(startMenu, "startMenu");
         add(mainPanel);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+        BluetoothServer server = new BluetoothServer(this);
+        Thread serverThread = new Thread(server);
+        serverThread.start();
     }
 
     public static void main(String[] args) {
@@ -63,5 +67,9 @@ public class SnakeApp extends JFrame {
 
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
+    }
+
+    public void updateBluetoothStatus(String status) {
+        startMenu.updateBluetoothStatus(status);
     }
 }
